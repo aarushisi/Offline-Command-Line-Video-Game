@@ -1,4 +1,44 @@
 - Download Ollama
 - Configure ollama
 - Download deepseek, qwen-v1, and whisper
--
+    - ollama run bsahane/Qwen2.5-VL-7B-Instruct:Q4_K_M_benxh
+    - whisper --> create .py page to transcribe stuff
+- Configure those models
+- Configure Langchain
+
+
+Implement LangChain
+Use LangChain to manage conversation history, interactions, and model routing.
+Set up memory to keep track of the game’s progress.
+Build the Game Loop
+Start the game with an introduction using the game story model.
+Allow the user to input actions via text or voice.
+Process the user’s actions using AI-generated responses.
+If an image is used, process it via Qwen-VL to introduce a new story element.
+If voice input is used, transcribe with Whisper and feed it into the game logic.
+The sidekick provides guidance when asked.
+Enhance Player Interaction
+Implement a help command to explain gameplay.
+Allow freeform exploration where the player can make decisions.
+Provide an exit command to end the game.
+Ensure Offline Functionality
+No external API calls; everything runs locally.
+Use local image processing and text-based interactions.
+Objective
+
+Create an interactive, offline command-line video game using Ollama to run small AI models locally. The game should incorporate:
+
+-Two AI models (e.g., DeepSeek and Qwen-VL) for generating and responding to the game story.
+-Whisper for voice input so users can play using speech or text.
+-LangChain to manage interactions between models and handle game logic.
+-A conversational sidekick who helps players decide their next move.
+-Image-based inspiration, where images can influence game events.
+ 
+
+Game Concept
+
+-The game is a text-based adventure where the player explores a world filled with mystery and challenges.
+-One AI model (e.g., DeepSeek) is responsible for generating the main game story and world-building.
+-Another AI model (e.g., Qwen-VL) is responsible for processing image inputs and influencing the story.
+-The user can ask the sidekick (a character powered by AI) for advice on what to do next or choose actions independently.
+-Users can interact using text or voice input.
