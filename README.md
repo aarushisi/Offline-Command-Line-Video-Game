@@ -1,6 +1,6 @@
 # 🕹️ **Offline Command-Line Video Game** 🕹️
 
-### **Mystery Adventure Game**  
+### **Mystery Adventure Game**  (Not done)
 This is an interactive, offline command-line video game that uses Ollama to run small AI models locally. The game incorporates two AI models (DeepSeek-r1 & Qwen-vl) for generating and responding to the game story, Whisper for voice input, and LangChain to manage interactions between models and handle game logic.
 
 ---
