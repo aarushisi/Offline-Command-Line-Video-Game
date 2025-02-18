@@ -12,7 +12,10 @@ import whisper
 import sounddevice as sd
 import numpy as np
 import scipy.io.wavfile as wav
+import re
 
+def strip_thinking(text):
+    return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
 
 # Instantiate memory, this will store the entire conversation history
 memory = ConversationBufferMemory(return_messages=True)
@@ -57,7 +60,7 @@ image_chain = (
 
 # Router function
 def route_input(input_data):
-    if input_data.get("image_path"):
+    if isinstance(input_data, dict) and input_data.get("image_path"):
         return "image"
     return "story"
 
@@ -69,7 +72,7 @@ def route_input(input_data):
 
 # Main chain
 chain = RunnableLambda(
-    lambda x: story_chain.invoke(x) if route_input(x) == "story" else image_chain.invoke(x)
+    lambda x: story_chain.invoke({"input": x}) if route_input(x) == "story" else image_chain.invoke({"input": x})
 )
 
 # Set up the router chain
@@ -102,8 +105,11 @@ def process_image(image_path):
     # Use Qwen-vk for image processing???
     return qwen_vl_model.predict(f"Describe the image and its influence on the story: {image_path}")
 
-def get_sidekick_advice():
-    return deepseek_model.invoke("As the player's sidekick, provide advice on what to do next in the game.")
+def get_sidekick_advice(history):
+    prompt = f"""As the player's sidekick, provide advice on what to do next in the game based on the current situation.
+    Game history: {history}
+    Advice:"""
+    return deepseek_model.invoke(prompt)
 
 # Audio stff
 whisper_model = whisper.load_model("base")
@@ -127,12 +133,14 @@ def game_interaction():
 
     # Generate game introduction using DeepSeek model
     intro = deepseek_model.invoke("Generate a a concise, intriguing one-paragraph introduction for a mystery adventure game.")
-    intro = intro.strip()
+    intro = strip_thinking(intro)
     print(intro)
 
     while True:
         # Get user input (text or voice)
-        user_input = input("Your action (type 'quit' to exit, 'voice' for voice input, 'image' for image input, 'help' for sidekick advice): ")
+        user_input = input("""Your action:
+        (type 'quit' to exit, 'voice' for voice input, 'image' for image input, 'help' for sidekick advice)
+        Or enter any other action: """)
 
         if user_input.lower() == "quit":
                 print("Thanks for playing!")
@@ -152,14 +160,18 @@ def game_interaction():
             print("Routing to image analysis...")
             response = chain.run(input=image_description)
         elif user_input.lower() == "help":
-            advice = get_sidekick_advice()
+            history = memory.load_memory_variables({})["history"]
+            advice = get_sidekick_advice(history)
+            advice = strip_thinking(advice)
             print("Sidekick:", advice)
             continue
         else:
             # Process the user's actions using AI-generated responses
             print("Routing to story generation...")
-            response = chain.invoke(input=user_input)
+            response = chain.invoke(user_input)
+            response = strip_thinking(response)
         
+        memory.save_context({"input": user_input}, {"output": response})
         # Displays the response to the user
         print("Game:", response)
     
